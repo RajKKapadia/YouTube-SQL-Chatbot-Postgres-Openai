@@ -58,7 +58,7 @@ def close_postgresql_cnx(cnx: psycopg2.extensions.connection) -> None:
             print(f"Error putting connection back to pool: {e}")
 
 
-def get_table_names() -> list[str]:
+def get_tables_names() -> list[str]:
     """Return a list of table names."""
     cnx = get_postgresql_pooled_cnx()
     cursor = cnx.cursor()
@@ -103,7 +103,7 @@ def get_database_definitions() -> dict:
 def get_database_info() -> dict:
     """Return a list of dicts containing the table name and columns for each table in the database."""
     table_dicts = []
-    for table_name in get_table_names():
+    for table_name in get_tables_names():
         columns_name = get_columns_name(table_name)
         table_dicts.append(
             {"table_name": table_name, "columns_name": columns_name})
