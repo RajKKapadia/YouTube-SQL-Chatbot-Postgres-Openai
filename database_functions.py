@@ -1,3 +1,4 @@
+from psycopg2.extras import RealDictCursor
 import datetime
 import decimal
 import os
@@ -58,7 +59,7 @@ def close_postgresql_cnx(cnx: psycopg2.extensions.connection) -> None:
             print(f"Error putting connection back to pool: {e}")
 
 
-def get_tables_names() -> list[str]:
+def get_tables_name() -> list[str]:
     """Return a list of table names."""
     cnx = get_postgresql_pooled_cnx()
     cursor = cnx.cursor()
@@ -103,7 +104,7 @@ def get_database_definitions() -> dict:
 def get_database_info() -> dict:
     """Return a list of dicts containing the table name and columns for each table in the database."""
     table_dicts = []
-    for table_name in get_tables_names():
+    for table_name in get_tables_name():
         columns_name = get_columns_name(table_name)
         table_dicts.append(
             {"table_name": table_name, "columns_name": columns_name})
@@ -132,14 +133,14 @@ def serialize_data(obj) -> str:
     raise TypeError(f"Object type not serializable - {type(obj)}")
 
 
-def execute_database_query(query: str) -> str:
+def execute_database_query(query: str) -> list[dict[str, str]] | list:
     """Function to query SQLite database with a provided SQL query."""
     cnx = get_postgresql_pooled_cnx()
     response = ''
     if cnx == None:
         return response
     try:
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(cursor_factory=RealDictCursor)
         cursor.execute(query)
         results = cursor.fetchall()
         for data in results:
@@ -151,11 +152,11 @@ def execute_database_query(query: str) -> str:
     return response
 
 
-def run_execute_database_query(query) -> list:
+def run_execute_database_query(query: str) -> list[dict[str, str]] | list:
     '''Execute a query and return the results
     '''
     try:
         return execute_database_query(query)
     except psycopg2.DatabaseError as e:
         print(f"Error executing query: {e}")
-        return []
+        return ''
